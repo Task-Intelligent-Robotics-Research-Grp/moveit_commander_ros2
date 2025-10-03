@@ -74,8 +74,8 @@ class MoveGroupCommander(object):
           self._g = _moveit_move_group_interface.MoveGroupInterface(
             name, robot_description, wait_for_servers
           )
-        except:
-          print("ERROR")
+        except Exception as e:
+          print(f"Failed to get MoveGroupInterface: {e}")
           self._g=None
 
     def __del__(self):
@@ -135,8 +135,8 @@ class MoveGroupCommander(object):
     def get_current_joint_values(self, deg=False):
         """Get the current configuration of the group as a list (these are values published on /joint_states)"""
         if deg:
-            return [np.rad2deg(x) for x in self._g.get_current_joint_values()] 
-        else:    
+            return [np.rad2deg(x) for x in self._g.get_current_joint_values()]
+        else:
             return self._g.get_current_joint_values()
 
     def get_current_pose(self, end_effector_link=""):
@@ -738,13 +738,13 @@ class MoveGroupCommander(object):
         """Pick the named object. A grasp message, or a list of Grasp messages can also be specified as argument."""
         if type(grasp) is Grasp:
             return self._g.pick(
-                object_name, 
+                object_name,
                 conversions.msg_to_string(grasp),
                 plan_only
             )
         else:
             return self._g.pick(
-                object_name, 
+                object_name,
                 [conversions.msg_to_string(x) for x in grasp],
                 plan_only
             )
@@ -767,7 +767,7 @@ class MoveGroupCommander(object):
             )
         elif type(location) is PlaceLocation:
             result = self._g.place(
-                object_name, 
+                object_name,
                 conversions.msg_to_string(location),
                 plan_only
             )
