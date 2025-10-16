@@ -32,25 +32,26 @@
 #
 # Author: Ioan Sucan, Felix Messmer
 
-import rclpy
+import rclpy, time
 import pyassimp
 
-from rclpy.node import Node
+from rclpy.node                       import Node
+from rclpy.callback_groups            import MutuallyExclusiveCallbackGroup
+from .                                import conversions
+from .exception                       import MoveItCommanderException
 
+from moveit_ros_planning_interface_py import _moveit_planning_scene_interface
 from moveit_msgs.msg                  import (PlanningScene, CollisionObject,
                                               AttachedCollisionObject)
-from moveit_ros_planning_interface_py import _moveit_planning_scene_interface
 from geometry_msgs.msg                import Pose, Point, PoseStamped
-from shape_msgs.msg                   import (SolidPrimitive, Plane, Mesh,
-                                              MeshTriangle)
+from shape_msgs.msg                   import (SolidPrimitive, Plane,
+                                              Mesh, MeshTriangle)
 from moveit_msgs.srv                  import ApplyPlanningScene
-from .exception                       import MoveItCommanderException
-from .                                import conversions
+
 
 def ns_join(ns, name):
     if ns:
         return '/'.join([ns, name])
-
     else:
         return name
 
@@ -62,44 +63,50 @@ class PlanningSceneInterface(object):
     See wrap_python_planning_scene_interface.cpp for the wrapped methods.
     """
 
-    def __init__(self, node=None, ns="", synchronous=False, timeout_sec=5.0):
+    def __init__(self, node, ns="", synchronous=False, timeout_sec=5.0):
         """Create a planning scene interface; it uses both C++ wrapped methods and scene manipulation topics."""
-        if node is None:
-            node = Node("planning_scene_interface")
+        self._logger = node.get_logger()
         self._psi = _moveit_planning_scene_interface.PlanningSceneInterface(ns)
         self.__synchronous = synchronous
-        if self.__synchronous:
-            service_ns = ns_join(ns, "apply_planning_scene")
-            self._apply_planning_scene_diff \
-                = node.create_client(ApplyPlanningScene, service_ns)
-            if not self._apply_planning_scene_diff.wait_for_service(
-                    timeout_sec=timeout_sec):
-                raise RuntimeException("service[%s] not available"
-                                       % service_ns)
-            node.get_logger().info('connected to service[%s]' % service_ns)
-        else:
-            co_ns = ns_join(ns, "collision_object")
-            self._pub_co = node.create_publisher(CollisionObject, co_ns, 100)
-            aco_ns = ns_join(ns, "attached_collision_object")
+
+        # Create a client of ApplyPlanningScene service
+        service_ns = ns_join(ns, "apply_planning_scene")
+        self._cbg = MutuallyExclusiveCallbackGroup()
+        self._apply_planning_scene \
+            = node.create_client(ApplyPlanningScene, service_ns,
+                                 callback_group=self._cbg)
+        if not self._apply_planning_scene.wait_for_service(timeout_sec\
+                                                           =timeout_sec):
+            raise MoveItCommanderException("service[%s] not available"
+                                           % service_ns)
+        node.get_logger().info("connected to service[%s]" % service_ns)
+
+        # Create publishers for collision and attached collision objects.
+        if not self.__synchronous:
+            co_topic = ns_join(ns, "collision_object")
+            self._pub_co = node.create_publisher(CollisionObject,
+                                                       co_topic, 100)
+            aco_topic = ns_join(ns, "attached_collision_object")
             self._pub_aco = node.create_publisher(AttachedCollisionObject,
-                                                  aco_ns, 100)
-            node.get_logger().info('created publishers[%s, %s]'
-                                   % (co_ns, aco_ns))
+                                                  aco_topic, 100)
+            node.get_logger().info("created publishers[%s, %s]"
+                                   % (co_topic, aco_topic))
 
     def __submit(self, collision_object, attach=False):
         if self.__synchronous:
-            def done_callback(future):
-                pass
-            diff_req = self.__make_planning_scene_diff_req(collision_object,
-                                                           attach)
-            future = self._apply_planning_scene_diff.call_async(diff_req)
-            future.add_done_callback(done_callback)
-
+            diff = self.__make_scene_diff_from_co(collision_object, attach)
+            self.__submit_scene_diff(ApplyPlanningScene.Request(scene=diff))
         else:
             if attach:
                 self._pub_aco.publish(collision_object)
             else:
                 self._pub_co.publish(collision_object)
+
+    def __submit_scene_diff(self, diff):
+        future = self._apply_planning_scene.call_async(diff)
+        while not future.done():
+            self._logger.info('### waiting...')
+            time.sleep(0.5)
 
     def gen_pose(self, x, y, z, frame_id='world'):
         pose_ = PoseStamped()
@@ -150,8 +157,8 @@ class PlanningSceneInterface(object):
         """Attach an object in the planning scene"""
         self.__submit(attached_collision_object, attach=True)
 
-    def attach_mesh(
-        self, link, name, pose=None, filename="", size=(1, 1, 1), touch_links=[]
+    def attach_mesh(self, link, name,
+                    pose=None, filename="", size=(1, 1, 1), touch_links=[]
     ):
         aco = AttachedCollisionObject()
         if (pose is not None) and filename:
@@ -164,7 +171,8 @@ class PlanningSceneInterface(object):
             aco.touch_links = touch_links
         self.__submit(aco, attach=True)
 
-    def attach_box(self, link, name, pose=None, size=(1, 1, 1), touch_links=[]):
+    def attach_box(self, link, name,
+                   pose=None, size=(1, 1, 1), touch_links=[]):
         aco = AttachedCollisionObject()
         if pose is not None:
             aco.object = self.__make_box(name, pose, size)
@@ -301,11 +309,11 @@ class PlanningSceneInterface(object):
         co.pose      = pose.pose
 
         try:
-            with pyassimp.load(filename) as scene:
+            with pyassimp.load(filepath_from_url(url)) as scene:
                 if not scene.meshes or len(scene.meshes) == 0:
-                    raise RuntimeError("no meshes in the file")
+                    raise MoveItCommanderException("no meshes in the file")
                 if len(scene.meshes[0].faces) == 0:
-                    raise RuntimeError("no faces in the mesh")
+                    raise MoveItCommanderException("no faces in the mesh")
 
                 mesh = Mesh()
                 first_face = scene.meshes[0].faces[0]
@@ -363,7 +371,7 @@ class PlanningSceneInterface(object):
         return co
 
     @staticmethod
-    def __make_planning_scene_diff_req(collision_object, attach=False):
+    def __make_scene_diff_from_co(collision_object, attach=False):
         scene = PlanningScene()
         scene.is_diff = True
         scene.robot_state.is_diff = True
@@ -371,6 +379,4 @@ class PlanningSceneInterface(object):
             scene.robot_state.attached_collision_objects = [collision_object]
         else:
             scene.world.collision_objects = [collision_object]
-        planning_scene_diff_req = ApplyPlanningScene.Request()
-        planning_scene_diff_req.scene = scene
-        return planning_scene_diff_req
+        return scene
