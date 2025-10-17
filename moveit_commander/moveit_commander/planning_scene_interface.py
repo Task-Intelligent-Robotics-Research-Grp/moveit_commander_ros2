@@ -184,9 +184,9 @@ class PlanningSceneInterface(object):
             co = self.__make_existing(name)
         self.attach_object(co, link, touch_links)
 
-    def clear(self):
-        """Remove all objects from the planning scene"""
-        self._psi.clear()
+    # def clear(self):
+    #     """Remove all objects from the planning scene"""
+    #     self._psi.clear()
 
     def remove_world_object(self, name=None):
         """
@@ -317,41 +317,36 @@ class PlanningSceneInterface(object):
         co.header = pose.header
         co.pose = pose.pose
 
-        try:
-            with pyassimp.load(filepath_from_url(url)) as scene:
-                if not scene.meshes or len(scene.meshes) == 0:
-                    raise MoveItCommanderException("no meshes in the file")
-                if len(scene.meshes[0].faces) == 0:
-                    raise MoveItCommanderException("no faces in the mesh")
+        with pyassimp.load(filepath_from_url(url)) as scene:
+            if not scene.meshes or len(scene.meshes) == 0:
+                raise MoveItCommanderException("no meshes in the file")
+            if len(scene.meshes[0].faces) == 0:
+                raise MoveItCommanderException("no faces in the mesh")
 
-                mesh = Mesh()
-                first_face = scene.meshes[0].faces[0]
-                if hasattr(first_face, '__len__'):
-                    for face in scene.meshes[0].faces:
-                        if len(face) == 3:
-                            triangle = MeshTriangle()
-                            triangle.vertex_indices = [face[0],
-                                                       face[1],
-                                                       face[2]]
-                            mesh.triangles.append(triangle)
-                elif hasattr(first_face, 'indices'):
-                    for face in scene.meshes[0].faces:
-                        if len(face.indices) == 3:
-                            triangle = MeshTriangle()
-                            triangle.vertex_indices = [face.indices[0],
-                                                       face.indices[1],
-                                                       face.indices[2]]
-                            mesh.triangles.append(triangle)
-                else:
-                    raise MoveItCommanderException("unable to build triangles from mesh due to mesh object structure")
-            for vertex in scene.meshes[0].vertices:
-                mesh.vertices.append(Point(x=vertex[0]*scale[0],
-                                           y=vertex[1]*scale[1],
-                                           z=vertex[2]*scale[2]))
-            co.meshes = [mesh]
-            return co
-        except Exception as e:
-            raise MoveItCommanderException('failed to load mesh: %s' % e)
+            mesh = Mesh()
+            first_face = scene.meshes[0].faces[0]
+            if hasattr(first_face, '__len__'):
+                for face in scene.meshes[0].faces:
+                    if len(face) == 3:
+                        triangle = MeshTriangle()
+                        triangle.vertex_indices = [face[0], face[1], face[2]]
+                        mesh.triangles.append(triangle)
+            elif hasattr(first_face, 'indices'):
+                for face in scene.meshes[0].faces:
+                    if len(face.indices) == 3:
+                        triangle = MeshTriangle()
+                        triangle.vertex_indices = [face.indices[0],
+                                                   face.indices[1],
+                                                   face.indices[2]]
+                        mesh.triangles.append(triangle)
+            else:
+                raise MoveItCommanderException("unable to build triangles from mesh due to mesh object structure")
+        for vertex in scene.meshes[0].vertices:
+            mesh.vertices.append(Point(x=vertex[0]*scale[0],
+                                       y=vertex[1]*scale[1],
+                                       z=vertex[2]*scale[2]))
+        co.meshes = [mesh]
+        return co
 
     @staticmethod
     def make_sphere(name, pose, radius):
