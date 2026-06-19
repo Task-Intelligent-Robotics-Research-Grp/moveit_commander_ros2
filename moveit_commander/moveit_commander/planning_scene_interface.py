@@ -67,6 +67,8 @@ class PlanningSceneInterface(object):
         self._psi = _moveit_planning_scene_interface.PlanningSceneInterface(ns)
         self.__synchronous = synchronous
 
+        self._node = node
+
         # Create publishers for collision and attached collision objects.
         if not self.__synchronous:
             co_topic = ns_join(ns, "collision_object")
@@ -236,36 +238,25 @@ class PlanningSceneInterface(object):
         Get the poses from the objects identified by the given object ids list.
         """
         ser_ops = self._psi.get_object_poses(object_ids)
-        ops = dict()
-        for key in ser_ops:
-            msg = Pose()
-            conversions.msg_from_string(msg, ser_ops[key])
-            ops[key] = msg
-        return ops
+        return {key: conversions.deserialize_message(data, Pose)
+                for key, data in ser_ops.items()}
 
     def get_objects(self, object_ids=[]):
         """
         Get the objects identified by the given object ids list. If no ids are provided, return all the known objects.
         """
         ser_objs = self._psi.get_objects(object_ids)
-        objs = dict()
-        for key in ser_objs:
-            msg = CollisionObject()
-            conversions.msg_from_string(msg, ser_objs[key])
-            objs[key] = msg
-        return objs
+        return {key: conversions.deserialize_message(data, CollisionObject)
+                for key, data in ser_objs.items()}
 
     def get_attached_objects(self, object_ids=[]):
         """
         Get the attached objects identified by the given object ids list. If no ids are provided, return all the attached objects.
         """
         ser_aobjs = self._psi.get_attached_objects(object_ids)
-        aobjs = dict()
-        for key in ser_aobjs:
-            msg = AttachedCollisionObject()
-            conversions.msg_from_string(msg, ser_aobjs[key])
-            aobjs[key] = msg
-        return aobjs
+        return {key: conversions.deserialize_message(data,
+                                                     AttachedCollisionObject)
+                for key, data in ser_aobjs.items()}
 
     # def get_planning_scene(self, components):
     #     """Get move_group's current planning scene"""

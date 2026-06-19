@@ -41,6 +41,7 @@ except ImportError:
 
 from .exception import MoveItCommanderException
 from geometry_msgs.msg import Pose, PoseStamped, Transform
+from std_msgs.msg import String
 #import rospy
 import rclpy
 import rclpy.clock
@@ -53,8 +54,7 @@ def msg_to_string(msg):
     return rclpy.serialization.serialize_message(msg)
 
 def msg_from_string(msg, data):
-    msg=rclpy.serialization.deserialize_message(data, msg)
-    return msg
+    return rclpy.serialization.deserialize_message(data, msg)
 
 def deserialize_message(data, klass):
     return rclpy.serialization.deserialize_message(data, klass)
@@ -85,7 +85,7 @@ def list_to_pose(pose_list):
         pose_msg.position.x = pose_list[0]
         pose_msg.position.y = pose_list[1]
         pose_msg.position.z = pose_list[2]
-      
+
         #q = tf.transformations.quaternion_from_euler(
         #    pose_list[3], pose_list[4], pose_list[5]
         #)
