@@ -36,7 +36,8 @@ import rclpy, time
 import pyassimp
 
 from rclpy.node                       import Node
-from .                                import conversions
+from rclpy.serialization              import (serialize_message,
+                                              deserialize_message)
 from .exception                       import MoveItCommanderException
 
 from moveit_ros_planning_interface_py import _moveit_planning_scene_interface
@@ -238,7 +239,7 @@ class PlanningSceneInterface(object):
         Get the poses from the objects identified by the given object ids list.
         """
         ser_ops = self._psi.get_object_poses(object_ids)
-        return {key: conversions.deserialize_message(data, Pose)
+        return {key: deserialize_message(data, Pose)
                 for key, data in ser_ops.items()}
 
     def get_objects(self, object_ids=[]):
@@ -246,7 +247,7 @@ class PlanningSceneInterface(object):
         Get the objects identified by the given object ids list. If no ids are provided, return all the known objects.
         """
         ser_objs = self._psi.get_objects(object_ids)
-        return {key: conversions.deserialize_message(data, CollisionObject)
+        return {key: deserialize_message(data, CollisionObject)
                 for key, data in ser_objs.items()}
 
     def get_attached_objects(self, object_ids=[]):
@@ -254,8 +255,7 @@ class PlanningSceneInterface(object):
         Get the attached objects identified by the given object ids list. If no ids are provided, return all the attached objects.
         """
         ser_aobjs = self._psi.get_attached_objects(object_ids)
-        return {key: conversions.deserialize_message(data,
-                                                     AttachedCollisionObject)
+        return {key: deserialize_message(data, AttachedCollisionObject)
                 for key, data in ser_aobjs.items()}
 
     # def get_planning_scene(self, components):
@@ -269,8 +269,7 @@ class PlanningSceneInterface(object):
         Applies the planning scene message.
         """
         return self._psi.apply_planning_scene(
-            conversions.msg_to_string(planning_scene_message)
-        )
+            serialize_message(planning_scene_message))
 
     @staticmethod
     def __make_existing(name):

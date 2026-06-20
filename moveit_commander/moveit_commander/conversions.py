@@ -32,32 +32,10 @@
 #
 # Author: Ioan Sucan
 
-try:
-    # Try Python 2.7 behaviour first
-    from StringIO import StringIO
-except ImportError:
-    # Use Python 3.x behaviour as fallback and choose the non-unicode version
-    from io import BytesIO as StringIO
-
+import rclpy
 from .exception import MoveItCommanderException
 from geometry_msgs.msg import Pose, PoseStamped, Transform
-from std_msgs.msg import String
-#import rospy
-import rclpy
-import rclpy.clock
-import rclpy.serialization
-import numpy as np
 from .quaternion import euler_to_quaternion, quaternion_to_euler
-#import tf2
-
-def msg_to_string(msg):
-    return rclpy.serialization.serialize_message(msg)
-
-def msg_from_string(msg, data):
-    return rclpy.serialization.deserialize_message(data, msg)
-
-def deserialize_message(data, klass):
-    return rclpy.serialization.deserialize_message(data, klass)
 
 def pose_to_list(pose_msg):
     pose = []
@@ -69,7 +47,6 @@ def pose_to_list(pose_msg):
     pose.append(pose_msg.orientation.z)
     pose.append(pose_msg.orientation.w)
     return pose
-
 
 def list_to_pose(pose_list):
     pose_msg = Pose()
@@ -111,7 +88,6 @@ def list_to_pose(pose_list):
         )
     return pose_msg
 
-
 def list_to_pose_stamped(pose_list, target_frame):
     pose_msg = PoseStamped()
     pose_msg.pose = list_to_pose(pose_list)
@@ -119,7 +95,6 @@ def list_to_pose_stamped(pose_list, target_frame):
     #pose_msg.header.stamp = rospy.Time.now()
     pose_msg.header.stamp = rclpy.clock.Clock().now().to_msg()
     return pose_msg
-
 
 def transform_to_list(trf_msg):
     trf = []
@@ -131,7 +106,6 @@ def transform_to_list(trf_msg):
     trf.append(trf_msg.rotation.z)
     trf.append(trf_msg.rotation.w)
     return trf
-
 
 def list_to_transform(trf_list):
     trf_msg = Transform()

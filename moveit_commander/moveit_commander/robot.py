@@ -32,11 +32,13 @@
 #
 # Author: Ioan Sucan
 
-from moveit_commander import MoveGroupCommander
-from .exception import MoveItCommanderException
+from rclpy.serialization              import (serialize_message,
+                                              deserialize_message)
+from moveit_commander                 import MoveGroupCommander
+from .exception                       import MoveItCommanderException
 from moveit_ros_planning_interface_py import _moveit_robot_interface
-from moveit_msgs.msg import RobotState
-from visualization_msgs.msg import MarkerArray
+from moveit_msgs.msg                  import RobotState
+from visualization_msgs.msg           import MarkerArray
 import moveit_commander.conversions as conversions
 
 
@@ -118,8 +120,7 @@ class RobotCommander(object):
             if group is None:
                 raise MoveItCommanderException(
                     "There is no known group containing joint %s. Cannot move."
-                    % self._name
-                )
+                    % self._name)
             gc = self._robot.get_group(group)
             if gc is not None:
                 gc.set_joint_value_target(gc.get_current_joint_values())
@@ -148,8 +149,7 @@ class RobotCommander(object):
             """
             return conversions.list_to_pose_stamped(
                 self._robot._r.get_link_pose(self._name),
-                self._robot.get_planning_frame(),
-            )
+                self._robot.get_planning_frame())
 
     def __init__(self, robot_description="robot_description"):
         self._robot_description = robot_description
@@ -175,17 +175,20 @@ class RobotCommander(object):
             group (string):  get all markers for a group
             group, values (string, dict): get all markers for a group with desired values
         """
-        mrkr = MarkerArray()
         if not args:
-            mrkr = conversions.msg_from_string(mrkr, self._r.get_robot_markers())
+            mrkr = deserialize_message(self._r.get_robot_markers(),
+                                       MarkerArray)
         else:
             if isinstance(args[0], RobotState):
-                msg_str = conversions.msg_to_string(args[0])
-                mrkr = conversions.msg_from_string(mrkr, self._r.get_robot_markers(msg_str))
+                msg_str = serialize_message(args[0])
+                mrkr = deserialize_message(elf._r.get_robot_markers(msg_str),
+                                           MarkerArray)
             elif isinstance(args[0], dict):
-                mrkr = conversions.msg_from_string(mrkr, self._r.get_robot_markers(*args))
+                mrkr = deserialize_message(self._r.get_robot_markers(*args),
+                                           MarkerArray)
             elif isinstance(args[0], str):
-                mrkr = conversions.msg_from_string(mrkr, self._r.get_group_markers(*args))
+                mrkr = deserialize_message(self._r.get_group_markers(*args),
+                                           MarkerArray)
             else:
                 raise MoveItCommanderException("Unexpected type")
         return mrkr
@@ -204,7 +207,8 @@ class RobotCommander(object):
             if self.has_group(group):
                 return self._r.get_group_active_joint_names(group)
             else:
-                raise MoveItCommanderException("There is no group named %s" % group)
+                raise MoveItCommanderException("There is no group named %s"
+                                               % group)
         else:
             return self._r.get_active_joint_names()
 
@@ -218,7 +222,8 @@ class RobotCommander(object):
             if self.has_group(group):
                 return self._r.get_group_joint_names(group)
             else:
-                raise MoveItCommanderException("There is no group named %s" % group)
+                raise MoveItCommanderException("There is no group named %s"
+                                               % group)
         else:
             return self._r.get_joint_names()
 
@@ -231,7 +236,8 @@ class RobotCommander(object):
             if self.has_group(group):
                 return self._r.get_group_link_names(group)
             else:
-                raise MoveItCommanderException("There is no group named %s" % group)
+                raise MoveItCommanderException("There is no group named %s"
+                                               % group)
         else:
             return self._r.get_link_names()
 
@@ -241,10 +247,7 @@ class RobotCommander(object):
 
     def get_current_state(self):
         """Get a RobotState message describing the current state of the robot"""
-        #s = RobotState()
-        #s.deserialize(self._r.get_current_state())
-        s = conversions.deserialize_message(self._r.get_current_state(), RobotState)
-        return s
+        return deserialize_message(self._r.get_current_state(), RobotState)
 
     def get_current_variable_values(self):
         """
@@ -282,10 +285,10 @@ class RobotCommander(object):
         """
         if not name in self._groups:
             if not self.has_group(name):
-                raise MoveItCommanderException("There is no group named %s" % name)
-            self._groups[name] = MoveGroupCommander(
-                name, self._robot_description
-            )
+                raise MoveItCommanderException("There is no group named %s"
+                                               % name)
+            self._groups[name] = MoveGroupCommander(name,
+                                                    self._robot_description)
         return self._groups[name]
 
     def has_group(self, name):
@@ -308,8 +311,7 @@ class RobotCommander(object):
                         group = g
                     else:
                         if len(self.get_link_names(g)) < len(
-                            self.get_link_names(group)
-                        ):
+                            self.get_link_names(group)):
                             group = g
             self._joint_owner_groups[joint_name] = group
         return self._joint_owner_groups[joint_name]
