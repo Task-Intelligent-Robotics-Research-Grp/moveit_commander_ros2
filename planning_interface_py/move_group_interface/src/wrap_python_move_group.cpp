@@ -169,6 +169,11 @@ public:
     return py_bindings_tools::listFromString(getActiveJoints());
   }
 
+  bp::list getJointNamesList() const
+  {
+    return py_bindings_tools::listFromString(getJointNames());
+  }
+
   bp::list getJointsList() const
   {
     return py_bindings_tools::listFromString(getJoints());
@@ -846,6 +851,7 @@ static void wrap_move_group_interface()
   move_group_interface_class.def("get_interface_description", &MoveGroupInterfaceWrapper::getInterfaceDescriptionPython);
 
   move_group_interface_class.def("get_active_joints", &MoveGroupInterfaceWrapper::getActiveJointsList);
+  move_group_interface_class.def("get_joint_names", &MoveGroupInterfaceWrapper::getJointNamesList);
   move_group_interface_class.def("get_joints", &MoveGroupInterfaceWrapper::getJointsList);
   move_group_interface_class.def("get_variable_count", &MoveGroupInterfaceWrapper::getVariableCount);
   move_group_interface_class.def("allow_looking", &MoveGroupInterfaceWrapper::allowLooking);
