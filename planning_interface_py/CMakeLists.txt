@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 project(moveit_ros_planning_interface_py)
 
-# Default to C99
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 OLD)
+endif()
+
+# Default to C11
 if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
+  set(CMAKE_C_STANDARD 11)
 endif()
 
 # Default to C++20
