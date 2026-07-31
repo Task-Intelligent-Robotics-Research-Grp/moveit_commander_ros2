@@ -34,12 +34,12 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/common_planning_interface_objects/common_objects.h>
-#include <moveit/robot_state/conversions.h>
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
-#include <moveit/py_bindings_tools/py_conversions.h>
-#include <moveit/py_bindings_tools/serialize_msg.h>
-#include <moveit/py_bindings_tools/gil_releaser.h>
+#include <moveit/common_planning_interface_objects/common_objects.hpp>
+#include <moveit/robot_state/conversions.hpp>
+#include <moveit/py_bindings_tools/roscpp_initializer.hpp>
+#include <moveit/py_bindings_tools/py_conversions.hpp>
+#include <moveit/py_bindings_tools/serialize_msg.hpp>
+#include <moveit/py_bindings_tools/gil_releaser.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 //#include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/msg/marker_array.hpp>

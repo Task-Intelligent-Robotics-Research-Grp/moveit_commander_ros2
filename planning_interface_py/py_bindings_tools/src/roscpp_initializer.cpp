@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 /* Auther: Isao Hara */
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
-#include <moveit/py_bindings_tools/py_conversions.h>
+#include <moveit/py_bindings_tools/roscpp_initializer.hpp>
+#include <moveit/py_bindings_tools/py_conversions.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/executors/multi_threaded_executor.hpp>
 #include <memory>
