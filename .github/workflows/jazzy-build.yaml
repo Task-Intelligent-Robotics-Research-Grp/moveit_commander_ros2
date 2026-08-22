@@ -9,4 +9,4 @@ jobs:
     with:
       os: ubuntu-24.04
       ros_distro: jazzy
-      branch: ros2-devel
+      branch: devel-aist
