@@ -1,0 +1,12 @@
+name: lyrical-build
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  lyrical-build:
+    uses: ./.github/workflows/build.yaml
+    with:
+      os: ubuntu-26.04
+      ros_distro: lyrical
+      branch: lyrical

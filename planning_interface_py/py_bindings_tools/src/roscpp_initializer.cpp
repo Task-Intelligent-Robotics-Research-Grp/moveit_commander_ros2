@@ -123,7 +123,7 @@ static std::shared_ptr<rclcpp::Node> roscpp_init_or_stop(bool init)
     if (!rclcpp::ok())
     {
       proxy = std::make_unique<InitProxy>();
-#if 1 
+#if 1
       executor = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
       executor.get()->add_node(proxy.get()->getNode());
       std::thread executor_thread(std::bind(&rclcpp::executors::MultiThreadedExecutor::spin, executor.get()));

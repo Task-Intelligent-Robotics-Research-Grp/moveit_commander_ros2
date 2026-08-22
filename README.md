@@ -1,3 +1,10 @@
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Task-Intellignet-Robotics-Research-Grp/moveit_commander_ros2)
+![GitHub](https://img.shields.io/github/license/Task-Intellignet-Robotics-Research-Grp/moveit_commander_ros2)
+
+| ROS 2 Distribution | Jazzy                                                                                                                                                                    | Lyrical                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Build Status       | [![jazzy-build](https://github.com/Task-Intelligent-Robotics-Research-Grp/moveit_commander_ros2/actions/workflows/jazzy-build.yaml/badge.svg)](https://github.com/Task-Intelligent-Robotics-Research-Grp/moveit_commander_ros2/actions/workflows/jazzy-build.yaml) | [![lyrical-build](https://github.com/Task-Intelligent-Robotics-Research-Grp/moveit_commander_ros2/actions/workflows/lyrical-build.yaml/badge.svg)](https://github.com/Task-Intelligent-Robotics-Research-Grp/moveit_commander_ros2/actions/workflows/lyrical-build.yaml) |
+
 # moveit_commander_ros2
 Python interface to move_group on MoveiIt2
 
@@ -40,4 +47,3 @@ ROS1からROS2への移行に伴い`MoveIt`も`MoveIt2`となりましたが，`
 - [**moveit_py**](https://moveit.picknik.ai/main/doc/api/python_api/api.html)：[ROS2 Iron](https://docs.ros.org/en/jazzy/Releases/Release-Iron-Irwini.html)から`MoveIt2`に含まれるようになった公式Pythonインタフェース．`move_group`サーバのクライアントではなく，`MoveIt2`の[コアライブラリを直接ラップ](https://moveit.ai/moveit/ros/python/google/2023/02/15/MoveIt-Humble-Release.html)している．そのため，`moveit_py`を利用するアプリケーションは`move_group`サーバを[必要としない](https://hara-jp.com/_default/ja/Topics/moveit_py%E3%82%92%E4%BD%BF%E3%81%86.html)．APIはROS1の`moveit_commander`と異なる．
 
 `pymoveit2`と本パッケージは`move_group`サーバのクライアントとして機能するのに対し，`moveit_py`は`MoveIt2`のコアライブラリに直接アクセスしている点が大きな違いになります．ROS1の`moveit_commander`とはノード間の関係が大きく変わりますので，`moveit_py`が`MoveIt2`の標準的なPythonインタフェースとして今後広く普及するかは，まだ未知数に思われます．
-
