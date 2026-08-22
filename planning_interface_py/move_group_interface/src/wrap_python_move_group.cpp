@@ -34,23 +34,23 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
-#include <moveit/py_bindings_tools/py_conversions.h>
-#include <moveit/py_bindings_tools/serialize_msg.h>
-#include <moveit/py_bindings_tools/gil_releaser.h>
-#include <moveit/robot_state/conversions.h>
-#include <moveit/robot_trajectory/robot_trajectory.h>
+#include <moveit/move_group_interface/move_group_interface.hpp>
+#include <moveit/py_bindings_tools/roscpp_initializer.hpp>
+#include <moveit/py_bindings_tools/py_conversions.hpp>
+#include <moveit/py_bindings_tools/serialize_msg.hpp>
+#include <moveit/py_bindings_tools/gil_releaser.hpp>
+#include <moveit/robot_state/conversions.hpp>
+#include <moveit/robot_trajectory/robot_trajectory.hpp>
 #ifdef ROS_HUMBLE
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
 #include <moveit/trajectory_processing/iterative_spline_parameterization.h>
 #endif
-#include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
+#include <moveit/trajectory_processing/time_optimal_trajectory_generation.hpp>
 
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/buffer.h>
+#include <tf2_ros/buffer.hpp>
 
 #include <boost/python.hpp>
 #include <boost/noncopyable.hpp>
@@ -546,7 +546,7 @@ public:
     double fraction;
     {
       GILReleaser gr;
-      fraction = computeCartesianPath(poses, eef_step, jump_threshold, trajectory, path_constraints, avoid_collisions);
+      fraction = computeCartesianPath(poses, eef_step, trajectory, path_constraints, avoid_collisions);
     }
     return bp::make_tuple(py_bindings_tools::serializeMsg(trajectory), fraction);
   }

@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/py_bindings_tools/roscpp_initializer.h>
+#include <moveit/py_bindings_tools/roscpp_initializer.hpp>
 #include <boost/python.hpp>
 #include <Python.h>
 
