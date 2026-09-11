@@ -9,4 +9,4 @@ jobs:
     with:
       os: ubuntu-26.04
       ros_distro: lyrical
-      branch: lyrical
+      branch: lyrical-aist
